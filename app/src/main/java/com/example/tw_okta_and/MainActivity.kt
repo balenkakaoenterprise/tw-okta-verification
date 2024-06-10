@@ -19,11 +19,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate called")
 
         // Firebase 초기화
         FirebaseApp.initializeApp(this)
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        Log.d(TAG, "onCreate called")
 
         setContent {
             TwOktaAndTheme {

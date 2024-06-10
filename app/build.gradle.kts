@@ -76,3 +76,9 @@ dependencies {
     implementation ("com.google.firebase:firebase-crashlytics:18.2.9")
     implementation ("com.google.firebase:firebase-messaging:23.1.2")
 }
+
+tasks.named("mergeReleaseResources") {
+    dependsOn("processReleaseGoogleServices")
+}
+
+apply(plugin = "com.google.gms.google-services")
