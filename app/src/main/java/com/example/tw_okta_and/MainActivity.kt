@@ -14,7 +14,7 @@ import com.google.firebase.FirebaseApp
 import com.google.firebase.analytics.FirebaseAnalytics
 
 class MainActivity : ComponentActivity() {
-
+    private lateinit var firebaseAnalytics: FirebaseAnalytics
     private val TAG = "MainActivity"
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,6 +31,12 @@ class MainActivity : ComponentActivity() {
                 // Your app content
             }
         }
+    }
+    private fun logFirebaseEvent(event: String, description: String) {
+        val bundle = Bundle().apply {
+            putString("description", description)
+        }
+        firebaseAnalytics.logEvent(event, bundle)
     }
 }
 
