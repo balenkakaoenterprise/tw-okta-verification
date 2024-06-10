@@ -73,6 +73,7 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.4.3")
     debugImplementation("androidx.compose.ui:ui-tooling:1.4.3")
     implementation ("com.google.firebase:firebase-analytics:21.0.0")
+    implementation ("com.google.firebase:firebase-analytics-ktx:21.0.0")
     implementation ("com.google.firebase:firebase-crashlytics:18.2.9")
     implementation ("com.google.firebase:firebase-messaging:23.1.2")
 }

@@ -30,6 +30,7 @@ class MainActivity : ComponentActivity() {
             TwOktaAndTheme {
                 Log.d(TAG, "Setting content view")
                 // Your app content
+                Greeting("Android")
             }
         }
         logFirebaseEvent("app_start", "Application started")
@@ -38,6 +39,15 @@ class MainActivity : ComponentActivity() {
         val bundle = Bundle()
         bundle.putString("description", description)
         firebaseAnalytics.logEvent(event, bundle)
+    }
+    override fun onResume() {
+        super.onResume()
+        logFirebaseEvent("screen_view", "MainActivity onResume")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        logFirebaseEvent("screen_view", "MainActivity onPause")
     }
 }
 
