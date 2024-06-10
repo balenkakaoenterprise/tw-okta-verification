@@ -19,6 +19,11 @@ android {
 
     buildFeatures {
         viewBinding = true
+        dataBinding = true
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.0.5"
     }
 
     signingConfigs {
@@ -33,9 +38,12 @@ android {
     buildTypes {
         getByName("release") {
             isDebuggable = false
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             signingConfig = signingConfigs.getByName("release")
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+        getByName("debug") {
+            isMinifyEnabled = false
         }
     }
 
@@ -78,9 +86,24 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.4.3")
     debugImplementation("androidx.compose.ui:ui-tooling:1.4.3")
     implementation ("com.google.firebase:firebase-analytics-ktx:21.0.0")
+    implementation ("com.google.firebase:firebase-bom:28.4.0")
     implementation ("com.google.firebase:firebase-analytics:21.2.0")
     implementation ("com.google.firebase:firebase-crashlytics:18.2.9")
     implementation ("com.google.firebase:firebase-messaging:23.1.2")
+    implementation ("androidx.activity:activity-compose:1.3.1")
+    implementation ("androidx.compose.ui:ui:1.0.3")
+    implementation ("androidx.compose.material:material:1.0.3")
+    implementation ("androidx.compose.ui:ui-tooling-preview:1.0.3")
+    debugImplementation ("androidx.compose.ui:ui-tooling:1.0.3")
+    implementation ("androidx.lifecycle:lifecycle-runtime-ktx:2.3.1")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
+    implementation ("androidx.activity:activity-compose:1.3.1")
+    implementation ("com.google.accompanist:accompanist-systemuicontroller:0.18.0")
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.0.5")
 }
 
 tasks.named("preBuild") {
