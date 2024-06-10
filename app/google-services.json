@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "19783819218",
+    "project_id": "okta-auto-verification",
+    "storage_bucket": "okta-auto-verification.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:19783819218:android:a797ef0dc45044cf77b20b",
+        "android_client_info": {
+          "package_name": "com.example.tw_okta_and"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAEkf8FPjPAi_RREdtZhgA72rsgqeWcWr4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

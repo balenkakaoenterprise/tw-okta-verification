@@ -10,6 +10,8 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.tw_okta_and.ui.theme.TwOktaAndTheme
+import com.google.firebase.FirebaseApp
+import com.google.firebase.analytics.FirebaseAnalytics
 
 class MainActivity : ComponentActivity() {
 
@@ -18,6 +20,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "onCreate called")
+
+        // Firebase 초기화
+        FirebaseApp.initializeApp(this)
+        val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+
         setContent {
             TwOktaAndTheme {
                 Log.d(TAG, "Setting content view")

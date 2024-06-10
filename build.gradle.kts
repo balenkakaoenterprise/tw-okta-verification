@@ -2,6 +2,7 @@ plugins {
     id("com.android.application") version "8.0.0" apply false
     id("com.android.library") version "8.0.0" apply false
     id("org.jetbrains.kotlin.android") version "1.8.10" apply false
+    id("com.google.gms.google-services") version "4.3.10" apply false
 }
 
 allprojects {
@@ -22,3 +23,4 @@ allprojects {
         targetCompatibility = JavaVersion.VERSION_1_8.toString()
     }
 }
+
