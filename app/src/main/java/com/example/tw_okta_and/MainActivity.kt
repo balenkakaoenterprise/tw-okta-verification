@@ -19,11 +19,12 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate called")
 
         // Firebase 초기화
         FirebaseApp.initializeApp(this)
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-        Log.d(TAG, "onCreate called")
+
 
         setContent {
             TwOktaAndTheme {
@@ -31,11 +32,11 @@ class MainActivity : ComponentActivity() {
                 // Your app content
             }
         }
+        logFirebaseEvent("app_start", "Application started")
     }
     private fun logFirebaseEvent(event: String, description: String) {
-        val bundle = Bundle().apply {
-            putString("description", description)
-        }
+        val bundle = Bundle()
+        bundle.putString("description", description)
         firebaseAnalytics.logEvent(event, bundle)
     }
 }
