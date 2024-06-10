@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -14,6 +15,10 @@ android {
         targetSdk = 33
         versionCode = 1
         versionName = "1.0"
+    }
+
+    buildFeatures {
+        viewBinding = true
     }
 
     signingConfigs {
@@ -72,8 +77,8 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.4.0")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4:1.4.3")
     debugImplementation("androidx.compose.ui:ui-tooling:1.4.3")
-    implementation ("com.google.firebase:firebase-analytics:21.0.0")
     implementation ("com.google.firebase:firebase-analytics-ktx:21.0.0")
+    implementation ("com.google.firebase:firebase-analytics:21.2.0")
     implementation ("com.google.firebase:firebase-crashlytics:18.2.9")
     implementation ("com.google.firebase:firebase-messaging:23.1.2")
 }
@@ -83,3 +88,4 @@ tasks.named("preBuild") {
 }
 
 apply(plugin = "com.google.gms.google-services")
+apply(plugin = "com.google.firebase.crashlytics")

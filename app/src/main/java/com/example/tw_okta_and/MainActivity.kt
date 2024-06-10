@@ -11,20 +11,25 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.tw_okta_and.ui.theme.TwOktaAndTheme
 import com.google.firebase.FirebaseApp
+import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.example.tw_okta_and.databinding.ActivityMainBinding
 
 class MainActivity : ComponentActivity() {
     private lateinit var firebaseAnalytics: FirebaseAnalytics
     private val TAG = "MainActivity"
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        Log.d(TAG, "onCreate called")
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(R.layout.activity_main)
+
+        binding.textView.text = "Hello World!"
 
         // Firebase 초기화
-        FirebaseApp.initializeApp(this)
-        val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
-
+        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        Log.d(TAG, "onCreate called")
 
         setContent {
             TwOktaAndTheme {
