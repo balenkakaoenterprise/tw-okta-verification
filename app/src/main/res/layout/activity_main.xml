@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android">
     <data>
         <variable
@@ -7,6 +8,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@android:color/white"
         android:orientation="vertical">
 
         <RelativeLayout
@@ -16,22 +18,29 @@
                 android:id="@+id/textView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@{viewModel.message}" />
-            <TextView
-                android:id="@+id/logTextView"
+                android:text="@{viewModel.message != null ? viewModel.message : @string/default_message}" />
+            <ScrollView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/textView"
-                android:text="@{viewModel.logs}" />
+                android:layout_below="@id/textView">
+                <TextView
+                    android:id="@+id/logTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@{viewModel.logs != null ? viewModel.logs : @string/default_logs}" />
+            </ScrollView>
         </RelativeLayout>
 
-        <Button
-            android:id="@+id/accessibility_service_button"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Enable Accessibility Service" />
-
-        <!-- 추가적인 UI 요소들 -->
-
+            android:gravity="center"
+            android:layout_marginTop="16dp">
+            <Button
+                android:id="@+id/accessibility_service_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Enable Accessibility Service" />
+        </LinearLayout>
     </LinearLayout>
 </layout>

@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">tw-okta-and</string>
     <string name="accessibility_service_description">Accessibility service for automated Okta verification</string>
+    <string name="default_message">Default Message</string>
+    <string name="default_logs">Default Logs</string>
 </resources>

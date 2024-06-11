@@ -1,72 +1,82 @@
 package com.example.tw_okta_and
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.Settings
 import android.util.Log
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.databinding.DataBindingUtil
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import com.example.tw_okta_and.databinding.ActivityMainBinding
-import com.example.tw_okta_and.ui.theme.TwOktaAndTheme
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Button
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tw_okta_and.ui.theme.TwOktaAndTheme
 import com.google.firebase.analytics.FirebaseAnalytics
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import java.io.File
-
-class MyViewModel : ViewModel() {
-    private val _message = MutableStateFlow("Hello World!")
-    val message = _message.asStateFlow()
-
-    private val _logs = MutableStateFlow("")
-    val logs = _logs.asStateFlow()
-
-    fun updateMessage(newMessage: String) {
-        _message.value = newMessage
-    }
-
-    fun addLog(log: String) {
-        viewModelScope.launch {
-            _logs.value += "\n$log"
-        }
-    }
-}
+import android.net.Uri
+import android.widget.Toast
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     // Firebase Analytics 인스턴스
     private lateinit var firebaseAnalytics: FirebaseAnalytics
     private val TAG = "MainActivity"
-    // View 바인딩 인스턴스
-    private lateinit var binding: ActivityMainBinding
+
+    private lateinit var logTextView: TextView
 
     // ViewModel 인스턴스
     private val viewModel: MyViewModel by viewModels()
 
-    private companion object {
-        const val REQUEST_CODE = 1
+    companion object {
+        private const val REQUEST_CODE_WRITE_SETTINGS = 101
+        private const val REQUEST_CODE = 1
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 바인딩 초기화
-        binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
+        setContentView(R.layout.activity_main)
 
-        // ViewModel 바인딩
-        binding.viewModel = viewModel
-        binding.lifecycleOwner = this
+        logTextView = findViewById(R.id.logTextView)
+        val textView = findViewById<TextView>(R.id.textView)
+
+        lifecycleScope.launch {
+            viewModel.message.collect { message ->
+                textView.text = message
+            }
+        }
+
+        lifecycleScope.launch {
+            viewModel.logs.collect { logs ->
+                logTextView.text = logs
+            }
+        }
+
+        // 화면 밝기 설정
+        if (Settings.System.canWrite(this)) {
+            setBrightness(1.0f)
+        } else {
+            requestWriteSettingsPermission()
+        }
 
         // Firebase 초기화
         firebaseAnalytics = FirebaseAnalytics.getInstance(this)
@@ -80,33 +90,56 @@ class MainActivity : ComponentActivity() {
         // 권한 요청 체크
         checkPermissions()
 
-        // 접근성 서비스 설정 버튼 추가
-        binding.accessibilityServiceButton.setOnClickListener {
-            showAccessibilityDialog()
-        }
-
         // Composable Content 설정
         setContent {
             TwOktaAndTheme {
                 Log.d(TAG, "Setting content view")
                 // 앱 컨텐츠 설정
-                Greeting(viewModel)
+                MainScreen(viewModel)
             }
         }
+
         // Firebase 이벤트 로깅
         logFirebaseEvent("app_start", "Application started")
     }
 
+    // 밝기를 설정하는 메서드
+    private fun setBrightness(brightness: Float) {
+        val layoutParams = window.attributes
+        layoutParams.screenBrightness = brightness
+        window.attributes = layoutParams
+    }
+
+    private fun requestWriteSettingsPermission() {
+        val intent = Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS)
+        intent.data = Uri.parse("package:$packageName")
+        startActivityForResult(intent, REQUEST_CODE_WRITE_SETTINGS)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_CODE_WRITE_SETTINGS) {
+            if (Settings.System.canWrite(this)) {
+                setBrightness(1.0f)
+            } else {
+                Toast.makeText(this, "Write settings permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun checkPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED ||
-            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE),
-                REQUEST_CODE)
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ),
+                REQUEST_CODE
+            )
         } else {
-            // 권한이 이미 허용된 경우 파일 경로 설정
             setupFilePaths()
         }
     }
@@ -115,12 +148,9 @@ class MainActivity : ComponentActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_CODE) {
             if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // 권한이 허용되었습니다.
                 setupFilePaths()
             } else {
-                // 권한이 거부되었습니다.
-                Log.d(TAG, "Permission denied")
-                viewModel.addLog("Permission denied")
+                log("Permission denied")
             }
         }
     }
@@ -146,6 +176,7 @@ class MainActivity : ComponentActivity() {
     private fun log(message: String) {
         Log.d(TAG, message)
         viewModel.addLog(message)
+        logTextView.append("\n$message")
     }
 
     // Firebase 이벤트 로깅 메소드
@@ -161,11 +192,11 @@ class MainActivity : ComponentActivity() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Accessibility Permission")
         builder.setMessage("This app requires accessibility permission to perform certain functions. Please enable accessibility service in settings.")
-        builder.setPositiveButton("Go to Settings") { dialog, which ->
+        builder.setPositiveButton("Go to Settings") { _, _ ->
             val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
             startActivity(intent)
         }
-        builder.setNegativeButton("Cancel") { dialog, which ->
+        builder.setNegativeButton("Cancel") { dialog, _ ->
             dialog.dismiss()
         }
         builder.show()
@@ -186,19 +217,44 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-// Composable 함수 정의
 @Composable
-fun Greeting(viewModel: MyViewModel) {
-    Log.d("Greeting", "Greeting function called")
+fun MainScreen(viewModel: MyViewModel) {
+    val context = LocalContext.current
     val message = viewModel.message.collectAsState()
-    Text(text = "Hello Android! ${message.value}")
+    val logs = viewModel.logs.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        Text(text = "Message: ${message.value}")
+        LazyColumn(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            items(logs.value.split("\n")) { log ->
+                Text(text = log)
+            }
+        }
+        Button(
+            onClick = { showAccessibilityDialog(viewModel, context) },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text(text = "Enable Accessibility Service")
+        }
+    }
 }
 
-// 미리보기 설정
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    TwOktaAndTheme {
-        Greeting(MyViewModel())
+private fun showAccessibilityDialog(viewModel: MyViewModel, context: Context) {
+    val builder = AlertDialog.Builder(context)
+    builder.setTitle("Accessibility Permission")
+    builder.setMessage("This app requires accessibility permission to perform certain functions. Please enable accessibility service in settings.")
+    builder.setPositiveButton("Go to Settings") { _, _ ->
+        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
     }
+    builder.setNegativeButton("Cancel") { dialog, _ ->
+        dialog.dismiss()
+    }
+    builder.show()
+    viewModel.addLog("Showed accessibility dialog")
 }

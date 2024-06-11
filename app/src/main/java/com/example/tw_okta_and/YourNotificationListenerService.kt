@@ -4,6 +4,7 @@ import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
@@ -17,6 +18,15 @@ class YourNotificationListenerService : NotificationListenerService() {
     private val TAG = "NotificationListener"
     private val CHANNEL_ID = "YOUR_CHANNEL_ID"
     private lateinit var firebaseAnalytics: FirebaseAnalytics
+
+    companion object {
+        private const val EVENT_SERVICE_CREATED = "service_created"
+        private const val EVENT_NOTIFICATION_POSTED = "notification_posted"
+        private const val EVENT_OKTA_NOTIFICATION_DETECTED = "okta_notification_detected"
+        private const val EVENT_CLICK_PERFORMED = "click_performed"
+        private const val PARAM_DESCRIPTION = "description"
+        const val ACTION_PERFORM_CLICK = "com.example.tw_okta_and.ACTION_PERFORM_CLICK"
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -37,7 +47,7 @@ class YourNotificationListenerService : NotificationListenerService() {
         startForeground(1, notification)
 
         // Firebase 로그 이벤트 수집
-        logFirebaseEvent("service_created", "NotificationListenerService created")
+        logFirebaseEvent(EVENT_SERVICE_CREATED, "NotificationListenerService created")
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification) {
@@ -49,14 +59,14 @@ class YourNotificationListenerService : NotificationListenerService() {
             Log.d(TAG, "Notification posted: $notificationTitle : $notificationText")
 
             // Firebase 로그 이벤트 수집
-            logFirebaseEvent("notification_posted", "Notification posted: $notificationTitle : $notificationText")
+            logFirebaseEvent(EVENT_NOTIFICATION_POSTED, "Notification posted: $notificationTitle : $notificationText")
 
             // Okta Verify 알림인지 확인
             if ("Okta Verify" == notificationTitle && notificationText?.contains("본인 확인") == true) {
                 Log.d(TAG, "Okta Verify notification detected")
 
                 // Firebase 로그 이벤트 수집
-                logFirebaseEvent("okta_notification_detected", "Okta Verify notification detected")
+                logFirebaseEvent(EVENT_OKTA_NOTIFICATION_DETECTED, "Okta Verify notification detected")
 
                 // "예, 본인입니다" 버튼을 자동으로 클릭
                 performClickOnOktaNotification()
@@ -65,12 +75,12 @@ class YourNotificationListenerService : NotificationListenerService() {
     }
 
     private fun performClickOnOktaNotification() {
-        // 여기에 자동 클릭 로직을 구현합니다.
-        // AccessibilityService를 사용하여 화면의 특정 버튼을 클릭할 수 있습니다.
-        Log.d(TAG, "Performing click on Okta notification")
+        // AccessibilityService로 브로드캐스트 전송
+        val intent = Intent(ACTION_PERFORM_CLICK)
+        sendBroadcast(intent)
 
         // Firebase 로그 이벤트 수집
-        logFirebaseEvent("click_performed", "Performed click on Okta notification")
+        logFirebaseEvent(EVENT_CLICK_PERFORMED, "Performed click on Okta notification")
     }
 
     private fun createNotificationChannel() {
@@ -84,7 +94,7 @@ class YourNotificationListenerService : NotificationListenerService() {
     // Firebase 이벤트 로그 메서드 추가
     private fun logFirebaseEvent(event: String, description: String) {
         val bundle = Bundle()
-        bundle.putString("description", description)
+        bundle.putString(PARAM_DESCRIPTION, description)
         firebaseAnalytics.logEvent(event, bundle)
     }
 }
