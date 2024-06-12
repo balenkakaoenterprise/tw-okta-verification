@@ -10,7 +10,11 @@ import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 
 class YourAccessibilityService : AccessibilityService() {
     private val TAG = "AccessibilityService"
@@ -26,6 +30,25 @@ class YourAccessibilityService : AccessibilityService() {
         private const val EVENT_SERVICE_INTERRUPTED = "service_interrupted"
         private const val EVENT_SERVICE_DESTROYED = "service_destroyed"
         private const val PARAM_DESCRIPTION = "description"
+        fun startOktaAuthentication(context: Context) {
+            val intent = Intent(context, YourAccessibilityService::class.java)
+            intent.action = "START_OKTA_AUTHENTICATION"
+            context.startService(intent)
+        }
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == "START_OKTA_AUTHENTICATION") {
+            // Okta 인증 화면 감지 및 자동 승인 로직 추가
+            val handler = Handler(Looper.getMainLooper())
+            handler.postDelayed({
+                val rootNode = rootInActiveWindow
+                rootNode?.let {
+                    OktaAuthenticator.handleOktaNotification(it, this)
+                }
+            }, 2000) // 2초 후에 Okta 인증 화면 검사 및 자동 승인 시도
+        }
+        return super.onStartCommand(intent, flags, startId)
     }
 
     override fun onCreate() {
@@ -33,7 +56,7 @@ class YourAccessibilityService : AccessibilityService() {
         Log.d(TAG, "AccessibilityService created")
 
         // FirebaseAnalytics 초기화
-        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        firebaseAnalytics = Firebase.analytics
 
         // WakeLock 설정
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
@@ -96,8 +119,9 @@ class YourAccessibilityService : AccessibilityService() {
 
     // Firebase 이벤트 로깅 메소드
     private fun logFirebaseEvent(event: String, description: String) {
-        val bundle = Bundle()
-        bundle.putString(PARAM_DESCRIPTION, description)
+        val bundle = Bundle().apply {
+            putString(PARAM_DESCRIPTION, description)
+        }
         firebaseAnalytics.logEvent(event, bundle)
     }
 }
@@ -114,10 +138,13 @@ object OktaAuthenticator {
                 Log.d("OktaAuthenticator", "Clicked on Okta notification button: $confirmClicked")
 
                 // Firebase 이벤트 로깅
-                val bundle = Bundle()
-                bundle.putString("description", "Clicked on Okta notification button: $confirmClicked")
-                FirebaseAnalytics.getInstance(context).logEvent("button_clicked", bundle)
+                val bundle = Bundle().apply {
+                    putString("description", "Clicked on Okta notification button: $confirmClicked")
+                }
+                Firebase.analytics.logEvent("button_clicked", bundle)
             }
         }
     }
 }
+
+

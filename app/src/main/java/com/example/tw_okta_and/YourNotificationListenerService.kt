@@ -11,6 +11,8 @@ import android.service.notification.StatusBarNotification
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import android.os.Bundle
 
 class YourNotificationListenerService : NotificationListenerService() {
@@ -33,7 +35,7 @@ class YourNotificationListenerService : NotificationListenerService() {
         Log.d(TAG, "NotificationListenerService created")
 
         // FirebaseAnalytics 초기화
-        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        firebaseAnalytics = Firebase.analytics
 
         createNotificationChannel()
 
@@ -93,8 +95,9 @@ class YourNotificationListenerService : NotificationListenerService() {
 
     // Firebase 이벤트 로그 메서드 추가
     private fun logFirebaseEvent(event: String, description: String) {
-        val bundle = Bundle()
-        bundle.putString(PARAM_DESCRIPTION, description)
+        val bundle = Bundle().apply {
+            putString(PARAM_DESCRIPTION, description)
+        }
         firebaseAnalytics.logEvent(event, bundle)
     }
 }

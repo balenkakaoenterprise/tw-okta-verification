@@ -31,6 +31,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tw_okta_and.ui.theme.TwOktaAndTheme
 import com.google.firebase.analytics.FirebaseAnalytics
+import com.google.firebase.analytics.ktx.analytics
+import com.google.firebase.ktx.Firebase
 import java.io.File
 import android.net.Uri
 import android.widget.Toast
@@ -79,7 +81,7 @@ class MainActivity : ComponentActivity() {
         }
 
         // Firebase 초기화
-        firebaseAnalytics = FirebaseAnalytics.getInstance(this)
+        firebaseAnalytics = Firebase.analytics
         Log.d(TAG, "onCreate called")
         viewModel.addLog("onCreate called")
 
@@ -188,6 +190,32 @@ class MainActivity : ComponentActivity() {
         log("Logged Firebase event: $event - $description")
     }
 
+    override fun onResume() {
+        super.onResume()
+        // 접근성 서비스 활성화 상태 확인
+        val isAccessibilityServiceEnabled = isAccessibilityServiceEnabled()
+        if (!isAccessibilityServiceEnabled) {
+            showAccessibilityDialog()
+        } else {
+            // 접근성 권한이 활성화된 경우에만 Okta 인증 처리
+            handleOktaAuthentication()
+        }
+        // 화면 뷰 이벤트 로깅
+        logFirebaseEvent("screen_view", "MainActivity onResume")
+        log("onResume called")
+    }
+
+    private fun handleOktaAuthentication() {
+        // Okta 인증 처리 로직 추가
+        // AccessibilityService에서 Okta 인증 화면을 감지하고 자동으로 승인하는 코드 호출
+        YourAccessibilityService.startOktaAuthentication(this)
+    }
+
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        val prefString = Settings.Secure.getString(contentResolver, Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES)
+        return prefString?.contains(packageName + "/" + YourAccessibilityService::class.java.name) ?: false
+    }
+
     private fun showAccessibilityDialog() {
         val builder = AlertDialog.Builder(this)
         builder.setTitle("Accessibility Permission")
@@ -200,13 +228,6 @@ class MainActivity : ComponentActivity() {
             dialog.dismiss()
         }
         builder.show()
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // 화면 뷰 이벤트 로깅
-        logFirebaseEvent("screen_view", "MainActivity onResume")
-        log("onResume called")
     }
 
     override fun onPause() {
@@ -236,25 +257,5 @@ fun MainScreen(viewModel: MyViewModel) {
                 Text(text = log)
             }
         }
-        Button(
-            onClick = { showAccessibilityDialog(viewModel, context) },
-            modifier = Modifier.padding(top = 16.dp)
-        ) {
-            Text(text = "Enable Accessibility Service")
-        }
     }
-}
-
-private fun showAccessibilityDialog(viewModel: MyViewModel, context: Context) {
-    val builder = AlertDialog.Builder(context)
-    builder.setTitle("Accessibility Permission")
-    builder.setMessage("This app requires accessibility permission to perform certain functions. Please enable accessibility service in settings.")
-    builder.setPositiveButton("Go to Settings") { _, _ ->
-        context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
-    }
-    builder.setNegativeButton("Cancel") { dialog, _ ->
-        dialog.dismiss()
-    }
-    builder.show()
-    viewModel.addLog("Showed accessibility dialog")
 }
